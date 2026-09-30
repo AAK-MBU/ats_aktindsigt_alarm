@@ -140,7 +140,7 @@ uv run pytest
 uv run ruff check . && uv run ruff format --check .
 ```
 
-Testene kører isoleret. ATS-, OS2Forms-, aktindsigt-, database- og SMTP-kald monkeypatches. CI kører ruff og kræver, at `version` i `pyproject.toml` er bumpet på pull requests til `main`.
+Testene kører isoleret. ATS-, OS2Forms-, aktindsigt-, database- og SMTP-kald monkeypatches. CI kører ruff. PR'er til `main` gates af **version-gate** (`.github/workflows/version-gate.yml`): er `version` i `pyproject.toml` ikke højere end på `main`, fejler checket og beder i en PR-kommentar om én label, `major`, `minor` eller `bugfix`. CI skriver så den nye version i `pyproject.toml` og pusher den til PR'ens branch.
 
 ## Kendte begrænsninger
 
