@@ -28,10 +28,14 @@ def get_credential_password(name: str) -> str:
     Args:
         name: Credentialens navn.
 
+    Passwordene bruges som API-nøgler i HTTP-headers, så mellemrum og
+    linjeskift i enderne, fx fra copy-paste, fjernes. requests afviser ellers
+    headeren med ``InvalidHeader``.
+
     Returns:
-        Det dekrypterede password.
+        Det dekrypterede password uden mellemrum og linjeskift i enderne.
     """
     from mbu_rpa_core.database.connection import RPAConnection  # noqa: PLC0415
 
     with RPAConnection(db_env="PROD", commit=False) as conn:
-        return conn.get_credential(name)["decrypted_password"]
+        return conn.get_credential(name)["decrypted_password"].strip()
