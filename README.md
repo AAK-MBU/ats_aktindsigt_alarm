@@ -97,6 +97,7 @@ Værdier med præfikset `UDFYLDES_` er pladsholdere. `validate_config()` afviser
 | `ATS_URL`, `ATS_TOKEN` | ja | ATS-API'et |
 | `ATS_WORKQUEUE_OVERRIDE` | lokalt | Id på alarm-køen. I drift vælges den af ATS-sessionen. |
 | `DBCONNECTIONSTRINGPROD` | ja | ODBC-forbindelse til RPA-databasen (konstanter og credentials) |
+| `OPENORCHESTRATORKEY` | ja | Nøglen, credentials i `rpa.Credentials` er Fernet-krypteret med (læses af `mbu_rpa_core`). Skal være den samme, som credentialerne blev gemt med |
 | `AARHUS_ROOT_CERT_PEM` | nej | PEM med ATS' CA. Tilføjes til de offentlige rodcertifikater. |
 | `LOCAL_DEVELOPMENT` | nej | `true` sender alle alarm-mails til `TestEmail` |
 | `TestEmail` | når `LOCAL_DEVELOPMENT=true` | Modtager af omdirigerede mails |
