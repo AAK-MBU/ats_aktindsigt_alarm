@@ -7,7 +7,6 @@ from ats_framework.processes.missing_forms import (
     Submission,
     build_missing_item,
     classify_missing,
-    filter_since,
     find_missing,
     parse_created,
     parse_submission,
@@ -79,12 +78,6 @@ def test_missing_sorted_by_created():
     old = _sub(sid="1", uuid="u1", age=timedelta(days=2))
     newer = _sub(sid="2", uuid="u2", age=timedelta(hours=2))
     assert find_missing(UUID_MAPPING, [newer, old], set(), NOW) == [old, newer]
-
-
-def test_filter_since_drops_older_submissions():
-    old = _sub(uuid="old", age=timedelta(days=10))
-    new = _sub(uuid="new", age=timedelta(days=1))
-    assert filter_since([old, new], NOW - timedelta(days=5)) == [new]
 
 
 def test_classify_missing_in_queue_is_reported_once():

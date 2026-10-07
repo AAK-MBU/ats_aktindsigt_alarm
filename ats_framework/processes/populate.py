@@ -43,13 +43,9 @@ class _KnownReferences:
 
     En kø læses kun én gang, selv om flere webforms deler den. Portalen
     spørges pr. webform.
-
-    Attributes:
-        since: Skæringsdatoen, portalen spørges fra.
     """
 
-    def __init__(self, since: datetime):
-        self.since = since
+    def __init__(self):
         self._queues: dict[str, dict[str, str]] = {}
         self._portal_key: str | None = None
 
@@ -80,7 +76,7 @@ class _KnownReferences:
             self._portal_key = get_credential_password(
                 alarm_config.AKTINDSIGT_CREDENTIAL
             )
-        return fetch_received(webform_id, self.since, self._portal_key)
+        return fetch_received(webform_id, self._portal_key)
 
 
 def collect_missing_form_items(now: datetime) -> list[dict]:
@@ -95,14 +91,11 @@ def collect_missing_form_items(now: datetime) -> list[dict]:
     if not alarm_config.FORM_MAP:
         return []
 
-    since = alarm_config.siden()
     api_key = get_credential_password(alarm_config.OS2FORMS_CREDENTIAL)
-    known = _KnownReferences(since)
+    known = _KnownReferences()
     items = []
     for mapping in alarm_config.FORM_MAP:
-        submissions = missing_forms.filter_since(
-            missing_forms.fetch_submissions(mapping.webform_id, api_key), since
-        )
+        submissions = missing_forms.fetch_submissions(mapping.webform_id, api_key)
         if not submissions:
             continue
         references = [

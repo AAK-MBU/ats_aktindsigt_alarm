@@ -13,8 +13,7 @@ item-referencerne i en ATS-kø eller de svar-uuids, portalen har modtaget. Et
 svar tæller som landet i et led, når dets ``uuid`` eller ``sid`` (efter
 leddets ``match_on``) findes som delstreng i en af leddets referencer.
 
-Svar oprettet før ``alarm_config.SIDEN`` ignoreres, og svar yngre end
-``alarm_config.MAX_AGE`` springes over, så de når at lande. Et manglende svar
+Svar yngre end ``alarm_config.MAX_AGE`` springes over, så de når at lande. Et manglende svar
 meldes kun ved det første led, det ikke er nået til, sammen med det seneste
 led, det nåede. Hver webform med mindst ét manglende svar bliver til ét
 alarm-item med referencen ``missing_<webform_id>_<tidspunkt>``, så der meldes
@@ -126,19 +125,6 @@ def fetch_submissions(webform_id: str, api_key: str) -> list[Submission]:
 
     logger.info("Fetched %d submissions for %s", len(submissions), webform_id)
     return submissions
-
-
-def filter_since(submissions: list[Submission], since: datetime) -> list[Submission]:
-    """Fjerner svar oprettet før skæringsdatoen.
-
-    Args:
-        submissions: Webformens svar.
-        since: Skæringsdatoen (tidszonebevidst).
-
-    Returns:
-        De svar, der er oprettet på eller efter ``since``.
-    """
-    return [s for s in submissions if parse_created(s.created) >= since]
 
 
 def find_missing(

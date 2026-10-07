@@ -7,7 +7,7 @@ fejler højlydt, indtil de er udfyldt.
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Literal
 from zoneinfo import ZoneInfo
 
@@ -33,7 +33,7 @@ RETRYABLE_STATUSES = frozenset({"in progress", "failed"})
 MAX_RETRIES_PER_ITEM = 3
 
 # ATS-køen, polling-servicen lægger aktindsigts formularsvar på.
-INTAKE_QUEUE = "UDFYLDES_aktindsigt_intake_koe"
+INTAKE_QUEUE = "per.aktindsigt.intake"
 
 # Workqueue-navne i ATS, der overvåges.
 MONITORED_QUEUES: list[str] = [INTAKE_QUEUE]
@@ -46,15 +46,10 @@ OS2FORMS_BASE_URL = "https://selvbetjening.aarhuskommune.dk/da"
 OS2FORMS_CREDENTIAL = "os2_api"
 
 # Aktindsigt-portalens backend. Endpointet /api/intake/modtagne lægges til.
-AKTINDSIGT_BASE_URL = "UDFYLDES_aktindsigt_base_url"
+AKTINDSIGT_BASE_URL = "https://mbu-aktindsigt.adm.aarhuskommune.dk"
 # Credential i rpa.Credentials, hvis password er aktindsigts intake-API-nøgle
 # (sendes i headeren X-API-Key).
-AKTINDSIGT_CREDENTIAL = "UDFYLDES_aktindsigt_credential"
-
-# Skæringsdato som ISO-8601. Svar oprettet før den ignoreres, fordi sager fra
-# før den har intet svar-uuid i portalen. Uden tidszone tolkes den i
-# ATS_TIMEZONE.
-SIDEN = "UDFYLDES_skaeringsdato"
+AKTINDSIGT_CREDENTIAL = "aktindsigt_intake_api_key"
 
 
 @dataclass(frozen=True)
@@ -141,16 +136,6 @@ def subject(key: str, **fields: object) -> str:
     return f"{SUBJECT_PREFIX}: {SUBJECTS[key].format(**fields)}"
 
 
-def siden() -> datetime:
-    """Returnerer ``SIDEN`` som tidszonebevidst datetime.
-
-    Raises:
-        ValueError: Hvis ``SIDEN`` ikke er en ISO-8601-dato.
-    """
-    parsed = datetime.fromisoformat(SIDEN)
-    return parsed if parsed.tzinfo else parsed.replace(tzinfo=ATS_TIMEZONE)
-
-
 def _uses_portal() -> bool:
     """True hvis en mapping har portalen som led."""
     return any(d.kind == "aktindsigt" for m in FORM_MAP for d in m.destinations)
@@ -195,25 +180,17 @@ def validate_config() -> None:
     """Afviser konfiguration med pladsholdere eller ugyldige værdier.
 
     Raises:
-        ValueError: Hvis et kønavn, et webform-id, portalens opsætning eller
-            ``SIDEN`` er en pladsholder eller ugyldig, eller hvis et led har
-            en ukendt type eller match-type.
+        ValueError: Hvis et kønavn, et webform-id eller portalens opsætning
+            er en pladsholder, eller hvis et led har en ukendt type eller
+            match-type.
     """
     values = [*MONITORED_QUEUES]
     for mapping in FORM_MAP:
         values += _validate_mapping(mapping)
 
-    if FORM_MAP:
-        values.append(SIDEN)
     if _uses_portal():
         values += [AKTINDSIGT_BASE_URL, AKTINDSIGT_CREDENTIAL]
 
     placeholders = [v for v in values if v.startswith(PLACEHOLDER_PREFIX)]
     if placeholders:
         raise ValueError(f"alarm_config contains unfilled placeholders: {placeholders}")
-
-    if FORM_MAP:
-        try:
-            siden()
-        except ValueError as e:
-            raise ValueError(f"SIDEN is not an ISO-8601 date: {SIDEN!r}") from e

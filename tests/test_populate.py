@@ -53,16 +53,10 @@ def form_setup(monkeypatch):
             FormMapping(webform_id="f2", destinations=flow),
         ],
     )
-    monkeypatch.setattr(alarm_config, "SIDEN", (NOW - timedelta(days=5)).isoformat())
     old = (NOW - timedelta(hours=2)).isoformat()
     subs = {
         "f1": [Submission(sid="1", uuid="u1", created=old)],
-        "f2": [
-            Submission(sid="2", uuid="u2", created=old),
-            Submission(
-                sid="3", uuid="u3", created=(NOW - timedelta(days=10)).isoformat()
-            ),
-        ],
+        "f2": [Submission(sid="2", uuid="u2", created=old)],
     }
     calls = {"queue": 0, "portal": []}
 
@@ -71,8 +65,8 @@ def form_setup(monkeypatch):
         calls["queue"] += 1
         return {"u1": {"status": "completed"}}
 
-    def portal(webform_id, since, key):
-        calls["portal"].append((webform_id, since, key))
+    def portal(webform_id, key):
+        calls["portal"].append((webform_id, key))
         return {"u1": "sag 1"} if webform_id == "f1" else {}
 
     monkeypatch.setattr(populate, "get_credential_password", lambda name: f"key:{name}")
@@ -88,11 +82,10 @@ def form_setup(monkeypatch):
 def test_missing_form_items_per_mapping(form_setup):
     items = populate.collect_missing_form_items(NOW)
     assert [i["data"]["webform_id"] for i in items] == ["f2"]
-    # u3 er ældre end SIDEN og ignoreres.
     assert [m["uuid"] for m in items[0]["data"]["missing"]] == ["u2"]
     assert form_setup["queue"] == 1
     assert [c[0] for c in form_setup["portal"]] == ["f1", "f2"]
-    assert form_setup["portal"][0][2] == f"key:{alarm_config.AKTINDSIGT_CREDENTIAL}"
+    assert form_setup["portal"][0][1] == f"key:{alarm_config.AKTINDSIGT_CREDENTIAL}"
 
 
 def test_no_form_mapping_skips_os2forms(monkeypatch):

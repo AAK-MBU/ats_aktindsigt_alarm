@@ -1,7 +1,5 @@
 """Tests af opslaget i aktindsigt-portalens modtagne svar."""
 
-from datetime import UTC, datetime
-
 from ats_framework.helpers import aktindsigt_api
 from ats_framework.processes import alarm_config
 
@@ -33,9 +31,24 @@ def test_fetch_received_maps_uuid_to_sag(monkeypatch):
         )
 
     monkeypatch.setattr(aktindsigt_api.requests, "get", fake_get)
-    since = datetime(2026, 10, 1, tzinfo=UTC)
-
-    assert aktindsigt_api.fetch_received("f", since, "k") == {"u1": "sag 7"}
+    assert aktindsigt_api.fetch_received("f", "k") == {"u1": "sag 7"}
     assert seen["url"] == "https://akt/api/intake/modtagne"
-    assert seen["params"] == {"webform_id": "f", "siden": since.isoformat()}
+    assert seen["params"] == {"webform_id": "f"}
     assert seen["headers"] == {"X-API-Key": "k"}
+
+
+def test_fetch_received_marks_deleted_sager(monkeypatch):
+    monkeypatch.setattr(alarm_config, "AKTINDSIGT_BASE_URL", "https://akt")
+    rows = [
+        {"uuid": "u1", "sagId": 7, "slettet": False},
+        {"uuid": "u2", "sagId": 8, "slettet": True},
+    ]
+    monkeypatch.setattr(
+        aktindsigt_api.requests,
+        "get",
+        lambda *_a, **_k: _Response({"modtagne": rows}),
+    )
+    assert aktindsigt_api.fetch_received("f", "k") == {
+        "u1": "sag 7",
+        "u2": "sag 8 (slettet)",
+    }
