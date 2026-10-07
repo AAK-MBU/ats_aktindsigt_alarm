@@ -33,7 +33,7 @@ RETRYABLE_STATUSES = frozenset({"in progress", "failed"})
 MAX_RETRIES_PER_ITEM = 3
 
 # ATS-køen, polling-servicen lægger aktindsigts formularsvar på.
-INTAKE_QUEUE = "UDFYLDES_aktindsigt_intake_koe"
+INTAKE_QUEUE = "per.aktindsigt.intake"
 
 # Workqueue-navne i ATS, der overvåges.
 MONITORED_QUEUES: list[str] = [INTAKE_QUEUE]
@@ -46,10 +46,10 @@ OS2FORMS_BASE_URL = "https://selvbetjening.aarhuskommune.dk/da"
 OS2FORMS_CREDENTIAL = "os2_api"
 
 # Aktindsigt-portalens backend. Endpointet /api/intake/modtagne lægges til.
-AKTINDSIGT_BASE_URL = "UDFYLDES_aktindsigt_base_url"
+AKTINDSIGT_BASE_URL = "https://mbu-aktindsigt.adm.aarhuskommune.dk"
 # Credential i rpa.Credentials, hvis password er aktindsigts intake-API-nøgle
 # (sendes i headeren X-API-Key).
-AKTINDSIGT_CREDENTIAL = "UDFYLDES_aktindsigt_credential"
+AKTINDSIGT_CREDENTIAL = "aktindsigt_intake_api_key"
 
 
 @dataclass(frozen=True)
