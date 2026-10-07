@@ -9,7 +9,6 @@ portalen har slettet efter endt opbevaring, står der stadig med deres gamle
 """
 
 import logging
-from datetime import datetime
 
 import requests
 
@@ -20,13 +19,11 @@ logger = logging.getLogger(__name__)
 API_KEY_HEADER = "X-API-Key"
 
 
-def fetch_received(webform_id: str, since: datetime, api_key: str) -> dict[str, str]:
-    """Henter de svar på en webform, portalen har modtaget siden en dato.
+def fetch_received(webform_id: str, api_key: str) -> dict[str, str]:
+    """Henter de svar på en webform, portalen har modtaget.
 
     Args:
         webform_id: Webformens maskinnavn.
-        since: Tidligste modtagelsestidspunkt (tidszonebevidst). Sendes som
-            ISO-8601 i query-parameteren ``siden``.
         api_key: Aktindsigts intake-API-nøgle.
 
     Returns:
@@ -38,7 +35,7 @@ def fetch_received(webform_id: str, since: datetime, api_key: str) -> dict[str, 
     """
     response = requests.get(
         f"{alarm_config.AKTINDSIGT_BASE_URL.rstrip('/')}/api/intake/modtagne",
-        params={"webform_id": webform_id, "siden": since.isoformat()},
+        params={"webform_id": webform_id},
         headers={API_KEY_HEADER: api_key},
         timeout=60,
     )
