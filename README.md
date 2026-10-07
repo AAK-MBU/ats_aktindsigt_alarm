@@ -52,7 +52,7 @@ Hver `FormMapping` i `FORM_MAP` kobler en webform til en række led (`FormDestin
 | Led | Svaret tæller som landet, når |
 |---|---|
 | `ats_queue` | dets `uuid` eller `sid` (efter `match_on`) står som delstreng i en item-reference i køen, uanset status |
-| `aktindsigt` | dets `uuid` står i portalens `GET /api/intake/modtagne` for webformen |
+| `aktindsigt` | dets `uuid` står i portalens `GET /api/intake/modtagne` for webformen. Det gælder også sager, portalen har slettet efter endt opbevaring (`slettet: true`); de beskrives som `sag <id> (slettet)` |
 
 For hver webform hentes alle svar fra OS2Forms. Svar oprettet før `SIDEN` ignoreres, og svar yngre end `MAX_AGE` springes over. Hvert manglende svar meldes **én gang**, ved det første led det ikke er nået til, sammen med det seneste led det nåede (fx `ATS-køen <navn>: status completed`). Et svar, der mangler i køen, meldes altså ikke også som manglende i portalen.
 
@@ -79,7 +79,7 @@ uv run python main.py --queue --process
 | `STALE_STATUSES` / `RETRYABLE_STATUSES` | Statusser der kan gå i stå, og dem der genkøres |
 | `MAX_RETRIES_PER_ITEM` | Maks antal alarmer pr. workitem, der fører til genkørsel |
 | `INTAKE_QUEUE` | ATS-køen, polling-servicen lægger svarene på |
-| `MONITORED_QUEUES` | Workqueue-navne der overvåges. Slås op med `GET /workqueues/by_name/{navn}` |
+| `MONITORED_QUEUES` | Workqueue-navne der overvåges. Slås op med `GET /workqueues/by_name/{navn}`. Sletteprocessen [ats_aktindsigt_slet](https://github.com/AAK-MBU/ats_aktindsigt_slet)s kø kan tilføjes, så `slet_sag_`-items, der er gået i stå, genkøres |
 | `ATS_TIMEZONE` | Tidszonen ATS' tidsstempler uden tidszone, og `SIDEN` uden tidszone, tolkes i |
 | `OS2FORMS_BASE_URL`, `OS2FORMS_CREDENTIAL` | OS2Forms-instans og navnet på credentialen med api-key |
 | `AKTINDSIGT_BASE_URL`, `AKTINDSIGT_CREDENTIAL` | Portalens backend og navnet på credentialen med intake-API-nøglen |
@@ -120,7 +120,7 @@ Værdier med præfikset `UDFYLDES_` er pladsholdere. `validate_config()` afviser
 | ATS `GET /workqueues/by_name/{navn}`, `GET /workqueues/{id}/items` | læser overvågede køer og alarm-køen |
 | ATS `PUT /workitems/{id}/status` | genkører workitems |
 | OS2Forms `GET /webform_rest/{webform_id}/submissions` + hvert svars URL | læser svar (`entity.uuid`, `entity.sid`, `entity.created`) |
-| Aktindsigt `GET /api/intake/modtagne?webform_id=…&siden=…` med `X-API-Key` | læser modtagne svar (`uuid`, `sagId`) |
+| Aktindsigt `GET /api/intake/modtagne?webform_id=…&siden=…` med `X-API-Key` | læser modtagne svar (`uuid`, `sagId`, `slettet`) |
 | `[rpa].[Constants]`, `[rpa].[Credentials]` via `mbu_rpa_core.RPAConnection` | mail-opsætning og api-nøgler |
 
 ## Projektstruktur
