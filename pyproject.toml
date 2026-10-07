@@ -1,6 +1,6 @@
 [project]
 name = "ats-aktindsigt-alarm"
-version = "0.1.0"
+version = "1.0.0"
 description = "Alarmproces der overvåger aktindsigts intake-kø i ATS og OS2Forms-svar, der ikke er nået frem til aktindsigt-portalen."
 readme = "README.md"
 requires-python = ">=3.13"
